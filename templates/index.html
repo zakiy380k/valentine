@@ -145,12 +145,41 @@ button:active {
     0% { transform: translateY(-10vh); }
     100% { transform: translateY(110vh); }
 }
+#cinemaOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease;
+    z-index: 999;
+}
+
+#cinemaText {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    font-size: 26px;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    z-index: 1000;
+}
 
 
 </style>
 </head>
 
 <body>
+<div id="cinemaText"></div>
+
+<div id="cinemaOverlay"></div>
+
 <div id="hearts-bg"></div>
 
 <!-- СТАРТ -->
@@ -474,7 +503,7 @@ const loveLines = [
     "За твою доброту к котекам и собачкам",
     "За твою поддержку в грустные времена",
     "За твой смех смешной",
-    "За то что ты очень красива",
+    "За то что ты очень супер дупер ваще капей красива",
     "За самую классную попу на свете...",
     "За то, что ты есть у меня"
 ];
@@ -509,7 +538,8 @@ function startLoveScreen(){
 }
 
 function showRealFinal(){
-    show("finalScreen");
+    showCinemaFinal();
+
 
     if(navigator.vibrate){
         navigator.vibrate([300, 150, 300, 150, 600]);
@@ -536,6 +566,34 @@ function startPoops(){
         bg.appendChild(p);
     }
 }
+function showCinemaFinal(){
+    show("finalScreen");
+
+    const overlay = document.getElementById("cinemaOverlay");
+    const text = document.getElementById("cinemaText");
+
+    // затемнение
+    setTimeout(() => {
+        overlay.style.opacity = 0.85;
+    }, 300);
+
+    // первая строка
+    setTimeout(() => {
+        text.innerHTML = "Я выбрал тебя 1 ноября.";
+        text.style.opacity = 1;
+    }, 1800);
+
+    // вторая строка
+    setTimeout(() => {
+        text.innerHTML = "И буду выбирать каждый день.";
+    }, 4000);
+
+    // финал
+    setTimeout(() => {
+        text.innerHTML = "Я тебя люблю ❤️";
+    }, 6500);
+}
+
 
 </script>
 

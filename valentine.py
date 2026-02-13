@@ -6,7 +6,7 @@ bot = TeleBot("8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw")
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    web_app = types.WebAppInfo("")
+    web_app = types.WebAppInfo("https://valentine-rthw.onrender.com")
 
     btn = types.KeyboardButton("Open valentine", web_app=web_app)
 
@@ -14,3 +14,4 @@ def start(message):
     bot.send_message(message.chat.id, "Open", reply_markup=markup)
 
 bot.infinity_polling()
+

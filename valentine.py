@@ -4,6 +4,10 @@ import uvicorn
 from telebot import TeleBot, types
 import threading
 
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+
 bot = TeleBot("8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw")
 app = FastAPI()
 
@@ -19,8 +23,12 @@ def start(message):
 
 def run_bot():
     print("Bot started")
-    bot.infinity_polling()
-
+    bot.infinity_polling(skip_pending=True)
+    
+@app.get("/")
+async def home():
+    html = Path("templates/index.html").read_text(encoding="utf-8")
+    return HTMLResponse(html)
 
 threading.Thread(target=run_bot).start()
 

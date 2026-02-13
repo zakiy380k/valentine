@@ -2,12 +2,16 @@ from fastapi import FastAPI, Request
 from telebot import TeleBot, types
 from fastapi.responses import HTMLResponse
 from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 
 TOKEN = "8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw"
 WEBHOOK_URL = "https://valentine-rthw.onrender.com/webhook"
 
 bot = TeleBot(TOKEN)
 app = FastAPI()
+app.mount("/photos", StaticFiles(directory="photos"), name="photos")
+app.mount("/music", StaticFiles(directory="music"), name="music")
 
 
 # ====== ОБРАБОТЧИК СТАРТА ======

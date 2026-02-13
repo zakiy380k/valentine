@@ -170,12 +170,123 @@ button:active {
     transition: opacity 1.5s ease;
     z-index: 1000;
 }
+#bigHeart {
+    font-size: 90px;
+    margin-top: 40px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.7));
+}
 
+
+    #bigHeartWrap{
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 30px auto 0;
+}
+
+#bigHeart{
+    position: absolute;
+    inset: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 110px;
+    cursor: pointer;
+    transition: transform .12s ease;
+    filter: drop-shadow(0 0 18px rgba(255,255,255,.7));
+    user-select:none;
+    z-index:2;
+}
+
+#particles, #echo{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+/* маленькие разлетающиеся сердечки */
+.particle{
+    position:absolute;
+    left:50%;
+    top:50%;
+    font-size:18px;
+    transform: translate(-50%,-50%);
+    animation: fly .9s ease-out forwards;
+    opacity:.95;
+}
+
+@keyframes fly{
+    0%   { transform: translate(-50%,-50%) scale(.7); opacity:1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity:0; }
+}
+
+/* красивое «эхо» — световой ореол */
+.echoRing{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    transform: translate(-50%,-50%);
+    background: radial-gradient(circle, rgba(255,255,255,.55) 0%, rgba(255,255,255,.15) 40%, rgba(255,255,255,0) 70%);
+    animation: echo .7s ease-out forwards;
+}
+
+@keyframes echo{
+    0%   { transform: translate(-50%,-50%) scale(.6); opacity:.9; }
+    100% { transform: translate(-50%,-50%) scale(1.8); opacity:0; }
+}
+
+/* лёгкое затемнение фона на каждый клик */
+body.darkPulse::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.15);
+    animation: darkFade .25s ease;
+    pointer-events:none;
+    z-index:1;
+}
+@keyframes darkFade{
+    from{ opacity:.25; }
+    to  { opacity:0; }
+}
+#bgDark {
+    position: fixed;
+    inset: 0;
+    background: black;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+   #midText {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    color: white;
+    opacity: 0;
+    transition: 1s;
+    text-align: center;
+    z-index: 10;
+    pointer-events:none;
+}
 
 </style>
 </head>
 
 <body>
+
+<div id="midText"></div>
+
+<div id="bgDark"></div>
+
 <div id="cinemaText"></div>
 
 <div id="cinemaOverlay"></div>
@@ -191,11 +302,21 @@ button:active {
 
 
 <!-- ИГРА -->
-<div id="gameScreen" class="screen">
-    <h1>Найди 5 сердец ❤️</h1>
-    <div id="game"></div>
-    <div id="gameText"></div>
+<div id="clickerScreen" class="screen">
+    <h1 style="margin-bottom:10px;">Коснись моего сердца 💗</h1>
+
+    <div id="bigHeartWrap">
+        <div id="bigHeart">💗</div>
+        <div id="particles"></div>
+        <div id="echo"></div>
+    </div>
+
+    <div id="clickText" style="margin-top:24px;font-size:20px;opacity:.9;">
+        Наполняй его теплом…
+    </div>
 </div>
+
+
 
 <!-- ТЕСТ -->
 <div id="testScreen" class="screen">
@@ -237,7 +358,7 @@ button:active {
 </div>
 
 <div id="photoScreen" class="screen">
-    <h1>Наши моменты 📸</h1>
+    <h1>Мои любимые фотки(тебе не нравятся💔💔) 📸</h1>
 
         <img id="photo" src="/photos/1.jpg"
          style="
@@ -295,7 +416,7 @@ function show(id){
 let found = 0;
 
 function startGame(){
-    show("gameScreen");
+    show("clickerScreen")
     spawnHeart();
 }
 
@@ -503,7 +624,7 @@ const loveLines = [
     "За твою доброту к котекам и собачкам",
     "За твою поддержку в грустные времена",
     "За твой смех смешной",
-    "За то что ты очень супер дупер ваще капей красива",
+    "За то что ты очень супер дупер ваще капец красива",
     "За самую классную попу на свете...",
     "За то, что ты есть у меня"
 ];
@@ -593,6 +714,83 @@ function showCinemaFinal(){
         text.innerHTML = "Я тебя люблю ❤️";
     }, 6500);
 }
+let clicks = 0;
+let scale = 1;
+let darkness = 0;
+const heart = document.getElementById("bigHeart");
+const particles = document.getElementById("particles");
+const echo = document.getElementById("echo");
+const clickText = document.getElementById("clickText");
+
+heart.onclick = () => {
+    clicks++;
+// постепенное затемнение
+
+document.getElementById("bgDark").style.opacity = darkness;
+    // рост + пульс
+    scale += 0.035;
+    heart.style.transform = `scale(${scale})`;
+    setTimeout(() => {
+        heart.style.transform = `scale(${scale - 0.02})`;
+    }, 120);
+
+    // затемнение фона (короткое)
+    document.body.classList.add("darkPulse");
+    setTimeout(()=>document.body.classList.remove("darkPulse"), 260);
+
+    // «эхо» ореол
+    const ring = document.createElement("div");
+    ring.className = "echoRing";
+    echo.appendChild(ring);
+    setTimeout(()=>ring.remove(), 700);
+
+    // разлетающиеся сердечки
+    for(let i=0;i<6;i++){
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.textContent = "💗";
+        const angle = Math.random()*Math.PI*2;
+        const dist = 60 + Math.random()*60;
+        p.style.setProperty('--dx', `${Math.cos(angle)*dist}px`);
+        p.style.setProperty('--dy', `${Math.sin(angle)*dist}px`);
+        particles.appendChild(p);
+        setTimeout(()=>p.remove(), 900);
+    }
+
+    // меняем текст по мере «наполнения»
+    if (clicks === 5)  clickText.innerHTML = "Я чувствую, как оно теплеет…";
+    if (clicks === 10) clickText.innerHTML = "Оно становится больше с каждым твоим касанием";
+    if (clicks === 15) clickText.innerHTML = "Ещё немного…";
+    if (clicks >= 18){
+
+        clickText.innerHTML = "";
+
+        // сильное затемнение
+        document.getElementById("bgDark").style.opacity = 0.95;
+
+        // сердце сильно увеличивается
+        heart.style.transform = "scale(2.2)";
+
+        // текст перебивки
+        const mid = document.getElementById("midText");
+        mid.innerHTML = "Оно бьётся для тебя 💗";
+        mid.style.opacity = 1;
+
+        // пауза перед переходом
+        setTimeout(() => {
+            mid.style.opacity = 0;
+        }, 2000);
+
+        setTimeout(() => {
+            startTest();
+        }, 2800);
+    }
+    darkness += 0.04;
+    if (darkness > 0.75) darkness = 0.75;
+
+    document.getElementById("bgDark").style.opacity = darkness;
+};
+
 
 
 </script>

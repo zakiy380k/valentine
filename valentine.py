@@ -10,7 +10,7 @@ app = FastAPI()
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    web_app = types.WebAppInfo("https://ТВОЙ-САЙТ.onrender.com")
+    web_app = types.WebAppInfo("https://valentine-rthw.onrender.com")
     btn = types.KeyboardButton("Открыть", web_app=web_app)
     markup.add(btn)
 

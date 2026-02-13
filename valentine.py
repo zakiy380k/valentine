@@ -1,16 +1,16 @@
-from threading import Thread
-from fastapi import FastAPI
-import uvicorn
+from fastapi import FastAPI, Request
 from telebot import TeleBot, types
-import threading
-
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-bot = TeleBot("8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw")
+TOKEN = "8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw"
+WEBHOOK_URL = "https://valentine-rthw.onrender.com/webhook"
+
+bot = TeleBot(TOKEN)
 app = FastAPI()
 
+
+# ====== ОБРАБОТЧИК СТАРТА ======
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -21,16 +21,25 @@ def start(message):
     bot.send_message(message.chat.id, "Нажми кнопку", reply_markup=markup)
 
 
-def run_bot():
-    print("Bot started")
-    bot.infinity_polling(skip_pending=True)
-    
+# ====== WEBHOOK ПРИЕМ ======
+@app.post("/webhook")
+async def webhook(request: Request):
+    data = await request.body()
+    update = types.Update.de_json(data.decode("utf-8"))
+    bot.process_new_updates([update])
+    return {"ok": True}
+
+
+# ====== ГЛАВНАЯ СТРАНИЦА (WEB APP) ======
 @app.get("/")
 async def home():
     html = Path("templates/index.html").read_text(encoding="utf-8")
     return HTMLResponse(html)
 
-threading.Thread(target=run_bot).start()
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=10000)
+# ====== УСТАНОВКА WEBHOOK ПРИ СТАРТЕ ======
+@app.on_event("startup")
+def set_webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+    print("Webhook set!")

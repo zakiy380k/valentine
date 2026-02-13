@@ -21,6 +21,15 @@ body {
     padding: 25px;
     min-height: 100vh;
     box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .4s ease, transform .4s ease;
+}
+
+.screen.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .active {
@@ -41,8 +50,13 @@ button {
     background: white;
     color: #ff4e6a;
     font-weight: bold;
+    box-shadow: 0 8px 18px rgba(0,0,0,.15);
+    transition: transform .12s ease, box-shadow .12s ease;
 }
-
+button:active {
+    transform: scale(.96);
+    box-shadow: 0 4px 10px rgba(0,0,0,.2);
+}
 #game {
     position: relative;
     height: 60vh;
@@ -75,16 +89,77 @@ button {
     to { transform: translateY(100vh); }
 }
 
+#photo {
+    width: 92%;
+    height: 65vh;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    transition: transform .35s ease, opacity .35s ease;
+}
+#photo.zoom {
+    transform: scale(1.03);
+}
+#hearts-bg {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.fall-heart {
+    position: absolute;
+    top: -20px;
+    font-size: 18px;
+    animation: fall 6s linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh);
+        opacity: 0;
+    }
+}
+#poop-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.poop {
+    position: absolute;
+    font-size: 24px;
+    animation: float 6s linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(-10vh); }
+    100% { transform: translateY(110vh); }
+}
+
+
 </style>
 </head>
 
 <body>
+<div id="hearts-bg"></div>
 
 <!-- СТАРТ -->
 <div id="start" class="screen active">
     <h1>❤️ Ану расчехляй бусинка</h1>
     <button onclick="startGame()">Расчехлить</button>
 </div>
+
+
 
 <!-- ИГРА -->
 <div id="gameScreen" class="screen">
@@ -101,7 +176,7 @@ button {
 
 <!-- ВРЕМЯ -->
 <div id="timeScreen" class="screen">
-    <h1>Знакомы уже:</h1>
+    <h1>Ты в моем сердце уже:</h1>
     <div id="time"></div>
 
     <div id="finalText" style="margin-top:25px;font-size:26px;opacity:0;transition:1s;">
@@ -115,9 +190,64 @@ button {
     <div id="secret" style="margin-top:20px;font-size:22px;display:none;">
         Ты самый важный человек в моей жизни 💖
     </div>
+    <button onclick="goMusic()">Дальше →</button>
 
     <div id="confetti"></div>
 </div>
+
+<div id="musicScreen" class="screen">
+    <h1>Музыка которая с тобой связана 🎵</h1>
+
+    <audio id="music" controls>
+        <source src="/music/obrat.mp3" type="audio/mpeg">
+    </audio>
+
+    <br><br>
+    <button onclick="goPhotos()">Дальше →</button>
+</div>
+
+<div id="photoScreen" class="screen">
+    <h1>Наши моменты 📸</h1>
+
+        <img id="photo" src="/photos/1.jpg"
+         style="
+            width:92%;
+            height:65vh;
+            object-fit:cover;
+            object-position:center;
+            border-radius:20px;
+         ">
+    <br><br>
+    <button onclick="nextPhoto()">Следующее фото</button>
+    <br><br>
+    <button onclick="goFinal()">Дальше →</button>
+</div>
+<div id="loveScreen" class="screen">
+    <h1>Почему я тебя люблю…</h1>
+    <div id="loveText" style="font-size:22px;margin-top:30px;"></div>
+</div>
+
+
+<div id="poopScreen" class="screen">
+    <div id="poop-bg"></div>
+
+    <div style="position:relative; z-index:2;">
+        <div style="font-size:80px;">🌹</div>
+
+        <h2 style="margin-top:20px;">
+            Ты как роза среди какашек
+        </h2>
+
+        <button onclick="goLove()">Дальше →</button>
+    </div>
+</div>
+
+
+<div id="finalScreen" class="screen">
+    <h1>Я тебя люблю ❤️</h1>
+    <h2>Спасибо, что ты есть</h2>
+</div>
+
 
 
 <script>
@@ -175,6 +305,10 @@ const questions = [
 {
     q: "Кто самый лучший человек?",
     a: ["Даниил Чумаков", "Закикю", "Даня"]
+},
+{
+    q: "Какую форму принимают мои кишечные образования",
+    a: ["Узелок", "столбик", "риелтор", "гидроэлектростанции", "масленного отделочного связующего компаратора"]
 }
 ];
 
@@ -259,6 +393,148 @@ function startConfetti(){
 
         setTimeout(()=>heart.remove(),4000);
     }, 300);
+}
+
+//
+// ПЕРЕХОДЫ
+//
+function goMusic(){
+    show("musicScreen");
+
+    const music = document.getElementById("music");
+    music.currentTime = 0;
+    music.volume = 0.6;
+    music.play().catch(()=>{});
+}
+
+function goPhotos(){
+    show("photoScreen");
+    setTimeout(()=>{
+        document.getElementById("photo").classList.add("zoom");
+    }, 300);
+}
+
+function goFinal(){
+    goPoop();
+}
+
+function goLove(){
+    startLoveScreen();
+}
+
+//
+// ФОТО
+//
+const photos = [
+    "/photos/1.jpg",
+    "/photos/2.jpg",
+    "/photos/3.jpg"
+];
+
+let photoIndex = 0;
+
+function nextPhoto(){
+    const img = document.getElementById("photo");
+
+    img.style.opacity = 0;
+    img.classList.remove("zoom");
+
+    setTimeout(() => {
+        photoIndex++;
+        if(photoIndex >= photos.length){
+            photoIndex = 0;
+        }
+        img.src = photos[photoIndex];
+        img.style.opacity = 1;
+        img.classList.add("zoom");
+    }, 200);
+}
+
+function startHeartsRain(){
+    const container = document.getElementById("hearts-bg");
+
+    setInterval(() => {
+        const heart = document.createElement("div");
+        heart.className = "fall-heart";
+        heart.innerHTML = "❤️";
+
+        heart.style.left = Math.random()*100 + "%";
+        heart.style.fontSize = (14 + Math.random()*16) + "px";
+
+        container.appendChild(heart);
+
+        setTimeout(()=>heart.remove(),6000);
+    }, 300);
+}
+
+startHeartsRain();
+
+const loveLines = [
+    "Я люблю тебя за твои глаза безумно красивые ❤️",
+    "За твою доброту к котекам и собачкам",
+    "За твою поддержку в грустные времена",
+    "За твой смех смешной",
+    "За то что ты очень красива",
+    "За самую классную попу на свете...",
+    "За то, что ты есть у меня"
+];
+function startLoveScreen(){
+    show("loveScreen");
+
+    const el = document.getElementById("loveText");
+    let lineIndex = 0;
+    let charIndex = 0;
+
+    function type(){
+        if(lineIndex >= loveLines.length){
+            setTimeout(showRealFinal, 1500);
+            return;
+        }
+
+        const line = loveLines[lineIndex];
+
+        if(charIndex < line.length){
+            el.innerHTML += line.charAt(charIndex);
+            charIndex++;
+            setTimeout(type, 40);
+        } else {
+            el.innerHTML += "<br><br>";
+            lineIndex++;
+            charIndex = 0;
+            setTimeout(type, 600);
+        }
+    }
+
+    type();
+}
+
+function showRealFinal(){
+    show("finalScreen");
+
+    if(navigator.vibrate){
+        navigator.vibrate([300, 150, 300, 150, 600]);
+    }
+}
+
+function goPoop(){
+    show("poopScreen");
+    startPoops();
+}
+
+function startPoops(){
+    const bg = document.getElementById("poop-bg");
+
+    for(let i = 0; i < 40; i++){
+        const p = document.createElement("div");
+        p.className = "poop";
+        p.innerHTML = "💩";
+
+        p.style.left = Math.random()*100 + "%";
+        p.style.top = Math.random()*100 + "%";
+        p.style.fontSize = (18 + Math.random()*25) + "px";
+
+        bg.appendChild(p);
+    }
 }
 
 </script>

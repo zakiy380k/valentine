@@ -68,6 +68,13 @@ button {
     font-size: 24px;
     margin-top: 20px;
 }
+
+
+@keyframes fall {
+    from { transform: translateY(0); }
+    to { transform: translateY(100vh); }
+}
+
 </style>
 </head>
 
@@ -75,8 +82,8 @@ button {
 
 <!-- СТАРТ -->
 <div id="start" class="screen active">
-    <h1>❤️ У меня для тебя кое-что есть</h1>
-    <button onclick="startGame()">Начать</button>
+    <h1>❤️ Ану расчехляй бусинка</h1>
+    <button onclick="startGame()">Расчехлить</button>
 </div>
 
 <!-- ИГРА -->
@@ -94,9 +101,24 @@ button {
 
 <!-- ВРЕМЯ -->
 <div id="timeScreen" class="screen">
-    <h1>Мы вместе уже:</h1>
+    <h1>Знакомы уже:</h1>
     <div id="time"></div>
+
+    <div id="finalText" style="margin-top:25px;font-size:26px;opacity:0;transition:1s;">
+        Я тебя люблю ❤️
+    </div>
+
+    <button id="secretBtn" style="opacity:0;" onclick="showSecret()">
+        Открыть секрет
+    </button>
+
+    <div id="secret" style="margin-top:20px;font-size:22px;display:none;">
+        Ты самый важный человек в моей жизни 💖
+    </div>
+
+    <div id="confetti"></div>
 </div>
+
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -131,7 +153,7 @@ function spawnHeart(){
 
         if(found >= 5){
             document.getElementById("gameText").innerHTML =
-            "<h2>Ты нашёл моё сердце ❤️</h2>";
+            "<h2>Украла мое сердце........</h2>";
 
             setTimeout(startTest, 1500);
         } else {
@@ -147,12 +169,12 @@ function spawnHeart(){
 //
 const questions = [
 {
-    q: "Ты меня любишь?",
+    q: "Ты как ваще любишь Данька?",
     a: ["Да", "Очень", "Безумно"]
 },
 {
     q: "Кто самый лучший человек?",
-    a: ["Ты", "Только ты", "Конечно ты"]
+    a: ["Даниил Чумаков", "Закикю", "Даня"]
 }
 ];
 
@@ -190,8 +212,7 @@ function nextQ(){
 function startTimeScreen(){
     show("timeScreen");
 
-    // ⚠️ ПОСТАВЬ СВОЮ ДАТУ
-    const startDate = new Date("2024-11-01");
+    const startDate = new Date("2024-09-01"); // ← поставь свою дату
 
     function update(){
         const now = new Date();
@@ -211,7 +232,35 @@ function startTimeScreen(){
 
     update();
     setInterval(update, 1000);
+
+    // Через 3 сек появляется признание
+    setTimeout(() => {
+        document.getElementById("finalText").style.opacity = 1;
+        document.getElementById("secretBtn").style.opacity = 1;
+        startConfetti();
+    }, 3000);
 }
+function showSecret(){
+    document.getElementById("secret").style.display = "block";
+}
+
+function startConfetti(){
+    const container = document.getElementById("confetti");
+
+    setInterval(() => {
+        const heart = document.createElement("div");
+        heart.innerHTML = "❤️";
+        heart.style.position = "absolute";
+        heart.style.left = Math.random()*100 + "%";
+        heart.style.top = "-20px";
+        heart.style.fontSize = "24px";
+        heart.style.animation = "fall 4s linear";
+        container.appendChild(heart);
+
+        setTimeout(()=>heart.remove(),4000);
+    }, 300);
+}
+
 </script>
 
 </body>

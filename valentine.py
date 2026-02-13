@@ -28,9 +28,12 @@ def start(message):
 # ====== WEBHOOK ПРИЕМ ======
 @app.post("/webhook")
 async def webhook(request: Request):
-    data = await request.body()
-    update = types.Update.de_json(data.decode("utf-8"))
-    bot.process_new_updates([update])
+    try:
+        data = await request.body()
+        update = types.Update.de_json(data.decode("utf-8"))
+        bot.process_new_updates([update])
+    except Exception as e:
+        print("Webhook error:", e)
     return {"ok": True}
 
 

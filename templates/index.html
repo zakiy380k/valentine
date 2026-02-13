@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Valentine</title>
-
+<title>Love App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -11,104 +10,197 @@ body {
     margin: 0;
     height: 100vh;
     background: linear-gradient(135deg, #ff4e6a, #ff8fa3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
+    font-family: Arial;
+    color: white;
+    text-align: center;
     overflow: hidden;
 }
 
-.container {
-    text-align: center;
-    color: white;
+.screen {
+    display: none;
+    padding-top: 60px;
+}
+
+.active {
+    display: block;
 }
 
 button {
-    padding: 15px 30px;
-    font-size: 20px;
+    padding: 15px 25px;
+    font-size: 18px;
+    margin: 10px;
     border: none;
-    border-radius: 30px;
+    border-radius: 20px;
     background: white;
     color: #ff4e6a;
     cursor: pointer;
-    transition: 0.3s;
 }
 
-button:hover {
-    transform: scale(1.1);
-}
-
-.message {
-    margin-top: 30px;
-    font-size: 26px;
-    opacity: 0;
-    transition: 1s;
-}
-
-.hearts {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+#game {
+    position: relative;
+    height: 70vh;
 }
 
 .heart {
     position: absolute;
-    color: white;
-    font-size: 24px;
-    animation: float 5s linear infinite;
+    font-size: 30px;
+    cursor: pointer;
 }
 
-@keyframes float {
-    from {
-        transform: translateY(100vh);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(-10vh);
-        opacity: 0;
-    }
+.answer {
+    background: white;
+    color: #ff4e6a;
+    margin: 8px;
+    padding: 10px;
+    border-radius: 15px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>❤️ У меня для тебя кое-что есть</h1>
-    <button onclick="openValentine()">Открыть</button>
-
-    <div class="message" id="msg"></div>
+<!-- ЭКРАН 1 -->
+<div id="startScreen" class="screen active">
+    <h1>❤️ Маленькое приложение для тебя</h1>
+    <button onclick="openMenu()">Начать</button>
 </div>
 
-<div class="hearts" id="hearts"></div>
+<!-- ЭКРАН 2 -->
+<div id="menuScreen" class="screen">
+    <h2>Выбери что открыть</h2>
+    <button onclick="startGame()">Найти сердце</button>
+    <button onclick="startTest()">Тест</button>
+    <button onclick="showTime()">Сколько мы вместе</button>
+</div>
+
+<!-- ИГРА -->
+<div id="gameScreen" class="screen">
+    <h2>Найди сердце ❤️</h2>
+    <div id="game"></div>
+    <div id="gameResult"></div>
+</div>
+
+<!-- ТЕСТ -->
+<div id="testScreen" class="screen">
+    <h2>Небольшой тест 😏</h2>
+    <div id="question"></div>
+</div>
+
+<!-- ВРЕМЯ ВМЕСТЕ -->
+<div id="timeScreen" class="screen">
+    <h2>Мы вместе уже:</h2>
+    <div id="timeResult" style="font-size:22px;margin-top:20px;"></div>
+</div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const user = tg.initDataUnsafe.user;
-const name = user ? user.first_name : "тебя";
-
-function openValentine() {
-    const msg = document.getElementById("msg");
-    msg.innerHTML = `Я люблю тебя, ${name} ❤️`;
-    msg.style.opacity = 1;
-
-    createHearts();
+function show(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
-function createHearts() {
-    const heartsContainer = document.getElementById("hearts");
+function openMenu() {
+    show("menuScreen");
+}
 
-    for (let i = 0; i < 30; i++) {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerHTML = "❤️";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = (3 + Math.random() * 3) + "s";
-        heartsContainer.appendChild(heart);
+//
+// 1️⃣ ИГРА: НАЙТИ СЕРДЦЕ
+//
+let found = 0;
+
+function startGame() {
+    show("gameScreen");
+    found = 0;
+    document.getElementById("game").innerHTML = "";
+    spawnHeart();
+}
+
+function spawnHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+
+    heart.style.left = Math.random()*90 + "%";
+    heart.style.top = Math.random()*70 + "%";
+
+    heart.onclick = () => {
+        heart.remove();
+        found++;
+
+        if(found === 5){
+            document.getElementById("gameResult").innerHTML =
+            "Ты нашёл моё сердце ❤️";
+        } else {
+            spawnHeart();
+        }
+    };
+
+    document.getElementById("game").appendChild(heart);
+}
+
+//
+// 2️⃣ ТЕСТ
+//
+const questions = [
+{
+    q: "Ты меня любишь?",
+    a: ["Да", "Очень", "Безумно"]
+},
+{
+    q: "Кто самый лучший человек?",
+    a: ["Ты", "Конечно ты", "Только ты"]
+}
+];
+
+let qIndex = 0;
+
+function startTest(){
+    show("testScreen");
+    qIndex = 0;
+    renderQuestion();
+}
+
+function renderQuestion(){
+    const q = questions[qIndex];
+    let html = "<h3>"+q.q+"</h3>";
+
+    q.a.forEach(ans => {
+        html += `<div class="answer" onclick="nextQ()">${ans}</div>`;
+    });
+
+    document.getElementById("question").innerHTML = html;
+}
+
+function nextQ(){
+    qIndex++;
+    if(qIndex >= questions.length){
+        document.getElementById("question").innerHTML =
+        "<h3>Ты прошёл тест ❤️</h3>";
+    } else {
+        renderQuestion();
     }
+}
+
+//
+// 3️⃣ СКОЛЬКО ВМЕСТЕ
+//
+function showTime(){
+    show("timeScreen");
+
+    // ВАЖНО: поставь свою дату
+    const startDate = new Date("2024-09-01");
+
+    const now = new Date();
+    const diff = now - startDate;
+
+    const days = Math.floor(diff / (1000*60*60*24));
+    const minutes = Math.floor(diff / (1000*60));
+
+    document.getElementById("timeResult").innerHTML =
+        days + " дней<br>" +
+        minutes + " минут ❤️";
 }
 </script>
 

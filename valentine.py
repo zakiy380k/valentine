@@ -1,17 +1,20 @@
-from telebot import TeleBot, types
+from threading import Thread
+from fastapi import FastAPI
+import uvicorn
+from telebot import TeleBot
 
 bot = TeleBot("8488578422:AAEWZlmb5wmI5xc1QOyMaQeoo2TwUVIk5Gw")
+app = FastAPI()
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    bot.send_message(message.chat.id, "Бот работает")
 
-    web_app = types.WebAppInfo("https://valentine-rthw.onrender.com")
+def run_bot():
+    bot.infinity_polling()
 
-    btn = types.KeyboardButton("Open valentine", web_app=web_app)
+def run_api():
+    uvicorn.run(app, host="0.0.0.0", port=10000)
 
-    markup.add(btn)
-    bot.send_message(message.chat.id, "Open", reply_markup=markup)
-
-bot.infinity_polling()
-
+Thread(target=run_bot).start()
+run_api()
